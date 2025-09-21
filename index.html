@@ -5,17 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Roll Call | USME DTU</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-color: #f3f4f6; --card-bg-color: rgba(255, 255, 255, 0.85); --text-color: #1f2937;
             --text-muted-color: #6b7280; --border-color: #e5e7eb; --accent-color: #3b82f6;
+            --gold-color: #ca8a04; --green-color: #22c55e; --red-color: #ef4444;
+            --badge-green: #dcfce7; --badge-red: #fee2e2; --badge-blue: #dbeafe;
         }
         html.dark {
             --bg-color: #111827; --card-bg-color: rgba(31, 41, 55, 0.85); --text-color: #f9fafb;
             --text-muted-color: #9ca3af; --border-color: #374151; --accent-color: #60a5fa;
+            --gold-color: #facc15; --green-color: #4ade80; --red-color: #f87171;
+            --badge-green: #166534; --badge-red: #991b1b; --badge-blue: #1e40af;
         }
         body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--text-color); transition: background-color 0.3s, color 0.3s; }
+        .font-cursive { font-family: 'Dancing Script', cursive; }
+        select option { color: black; }
         .vibe-card { background-color: var(--card-bg-color); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid var(--border-color); transition: all 0.3s; }
         .subject-name-input { background: transparent; border: none; font-weight: 700; font-size: 1.125rem; padding: 0.25rem; border-radius: 0.375rem; width: 100%; color: var(--text-color); }
         .subject-name-input:focus { outline: none; background-color: rgba(128, 128, 128, 0.1); }
@@ -24,13 +32,23 @@
         .btn-control:hover { background-color: rgba(128, 128, 128, 0.2); }
         .btn-control:active { transform: scale(0.95); }
         .fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        .pop-in { animation: popIn 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes popIn { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s; z-index: 50; }
         .modal-overlay.active { opacity: 1; visibility: visible; }
         .modal-content { transform: scale(0.95); transition: transform 0.3s; }
         .modal-overlay.active .modal-content { transform: scale(1); }
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .spinner { border: 2px solid #f3f3f3; border-top: 2px solid var(--accent-color); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
+        
+        .badge { display: flex; flex-direction: column; align-items: center; text-align: center; }
+        .badge-circle { position: relative; width: 6rem; height: 6rem; border-radius: 9999px; display: flex; align-items: center; justify-content: center; background-color: #e5e7eb; transition: all 0.3s; filter: grayscale(1); opacity: 0.6; }
+        html.dark .badge-circle { background-color: #374151; }
+        .badge-circle.unlocked { filter: grayscale(0); opacity: 1; box-shadow: 0 0 15px 2px var(--color, var(--accent-color)); }
+        .badge-emoji { font-size: 3rem; line-height: 1; }
+        .badge-counter { position: absolute; top: -2px; right: -2px; background-color: var(--accent-color); color: white; font-size: 0.75rem; font-weight: bold; width: 1.5rem; height: 1.5rem; border-radius: 9999px; display: flex; align-items: center; justify-content: center; border: 2px solid var(--card-bg-color); }
+        .tooltip { position: relative; display: inline-block; cursor: default; }
+        .tooltip .tooltiptext { visibility: hidden; width: 160px; background-color: #1f2937; color: #fff; text-align: center; border-radius: 6px; padding: 8px; position: absolute; z-index: 60; bottom: 105%; left: 50%; margin-left: -80px; opacity: 0; transition: opacity 0.3s; font-size: 0.75rem; line-height: 1.25; pointer-events: none; }
+        .tooltip:hover .tooltiptext { visibility: visible; opacity: 1; }
     </style>
 </head>
 <body class="min-h-screen p-4 sm:p-6 lg:p-8">
@@ -38,16 +56,15 @@
     <div class="max-w-7xl mx-auto">
         <header class="flex justify-between items-center mb-6">
             <div class="text-left">
-                <div class="flex items-center gap-3">
-                    <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white">Roll Call</h1>
-                    <div class="flex items-center gap-1.5 bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded-full">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-gray-600 dark:text-gray-300"><path d="M12 2.75L14.2801 9.42379L21.5 10.3341L16.208 15.0183L17.6399 21.961L12 18.24L6.36012 21.961L7.79204 15.0183L2.5 10.3341L9.71992 9.42379L12 2.75Z" fill="currentColor"/></svg>
-                        <span class="text-xs font-semibold text-muted-color">powered by Gemini</span>
-                    </div>
-                </div>
-                <p class="text-muted-color mt-1">Your personal attendance manager for USME, DTU.</p>
+                <h1 class="text-5xl sm:text-6xl font-cursive font-bold text-gray-900 dark:text-white">Roll Call</h1>
+                <p class="text-muted-color mt-1 pl-1">Your personal attendance manager for USME, DTU.</p>
             </div>
-            <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"></button>
+            <div class="flex items-center gap-2">
+                 <button id="badges-btn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-3xl" title="View Badges">
+                    🐶
+                 </button>
+                 <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"></button>
+            </div>
         </header>
 
         <div class="vibe-card p-4 rounded-2xl shadow-md mb-6 space-y-4">
@@ -63,6 +80,7 @@
             </div>
         </div>
         
+        <div id="stats-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"></div>
         <div id="overall-summary" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8"></div>
         <div id="subjects-container" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6"></div>
         <div id="empty-state" class="hidden text-center py-16"><h3 class="text-xl font-semibold">No Subjects Yet</h3><p class="text-muted-color mt-2">Click "Add Subject" to start tracking.</p></div>
@@ -74,146 +92,147 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const getEl = (id) => document.getElementById(id);
-            const D = { // DOM elements
+            // DOM elements cache
+            const D = {
                 subjectsContainer: getEl('subjects-container'), courseSelect: getEl('course-select'), semesterSelect: getEl('semester-select'),
                 overallSummary: getEl('overall-summary'), addSubjectBtn: getEl('add-subject-btn'), emptyState: getEl('empty-state'),
                 themeToggle: getEl('theme-toggle'), resetDataBtn: getEl('reset-data-btn'), modalContainer: getEl('modal-container'),
-                historyBtn: getEl('history-btn'), endSemesterBtn: getEl('end-semester-btn'), endSemesterText: getEl('end-semester-text')
+                historyBtn: getEl('history-btn'), endSemesterBtn: getEl('end-semester-btn'), endSemesterText: getEl('end-semester-text'),
+                badgesBtn: getEl('badges-btn'), statsContainer: getEl('stats-container')
             };
 
-            const C = { // Constants
+            // Constants
+            const C = {
                 ATTENDANCE_CRITERIA: 75,
                 SUN_ICON: `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>`,
                 MOON_ICON: `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>`,
+                HIDDEN_BADGE_THRESHOLD: 15
             };
             
-            let S = { course: 'Bachelors of Economics Honours', semester: 1, subjects: [], semesterHistory: [], theme: 'light' }; // State
+            // Application State
+            let S = { course: 'Bachelors of Economics Honours', semester: 1, subjects: [], semesterHistory: [], theme: 'light' };
 
-            // --- State Management ---
+            // --- State & Storage ---
             const getStorageKey = (type) => `roll-call-${type}-${S.course.replace(/\s/g, '-')}-${S.semester}`;
-            const saveState = () => { try { localStorage.setItem(getStorageKey('subjects'), JSON.stringify(S.subjects)); localStorage.setItem('roll-call-semester-history', JSON.stringify(S.semesterHistory)); } catch (e) { console.error("Error saving state:", e); } };
-            const loadState = () => { try { const s = localStorage.getItem(getStorageKey('subjects')), h = localStorage.getItem('roll-call-semester-history'); S.subjects = s ? JSON.parse(s) : []; S.semesterHistory = h ? JSON.parse(h) : []; } catch (e) { console.error("Error loading state:", e); S.subjects = []; S.semesterHistory = []; } };
+            const saveState = () => { try { localStorage.setItem(getStorageKey('data'), JSON.stringify(S.subjects)); localStorage.setItem('roll-call-semester-history', JSON.stringify(S.semesterHistory)); } catch (e) { console.error("Error saving state:", e); } };
+            const loadState = () => { try { const data = localStorage.getItem(getStorageKey('data')); const history = localStorage.getItem('roll-call-semester-history'); S.subjects = data ? JSON.parse(data) : []; S.semesterHistory = history ? JSON.parse(history) : []; } catch (e) { console.error("Error loading state:", e); S.subjects = []; S.semesterHistory = []; } };
             const saveTheme = () => localStorage.setItem('roll-call-theme', S.theme);
             const loadTheme = () => { S.theme = localStorage.getItem('roll-call-theme') || (window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); applyTheme(); };
             const applyTheme = () => { document.documentElement.className = S.theme; D.themeToggle.innerHTML = S.theme === 'dark' ? C.SUN_ICON : C.MOON_ICON; };
             
             // --- Core Logic ---
-            const addSubject = () => { S.subjects.push({ id: `s-${Date.now()}`, name: `New Subject ${S.subjects.length+1}`, theoryAttended:0, theoryTotal:0, tutorialAttended:0, tutorialTotal:0 }); render(); };
+            const getNewBadgesObject = () => ({ rookieNerd: 0, intermediateNerd: 0, proMaxNerd: 0, suckUp: null, seenzoned: null, goat: false, streak5Achieved: false, streak7Achieved: false, streak10Achieved: false });
+            const getNewSubject = () => ({ id: `s-${Date.now()}`, name: `New Subject ${S.subjects.length+1}`, lecture: {attended: 0, total: 0}, tutorial: {attended: 0, total: 0}, streak: 0, lastAction: 'init', badges: getNewBadgesObject() });
+            const addSubject = () => { S.subjects.push(getNewSubject()); render(); };
             const removeSubject = (id) => { S.subjects = S.subjects.filter(s => s.id !== id); render(); };
             const resetData = () => { S.subjects = []; render(); };
             const getSubject = (id) => S.subjects.find(s => s.id === id);
             const getBonusMarks = (p) => { if (p>=95) return 5; if(p>=90) return 4; if(p>=85) return 3; if(p>=80) return 2; if(p>=75) return 1; return 0; };
             
-            const calculateSubjectData = (s) => { const a=(s.theoryAttended||0)+(s.tutorialAttended||0),t=(s.theoryTotal||0)+(s.tutorialTotal||0),p=t>0?(a/t*100):0; let m,c; const bonusMarks=getBonusMarks(p); if(t===0){m=`Add classes to begin.`;c='text-muted-color';}else if(p<C.ATTENDANCE_CRITERIA){const n=Math.ceil((C.ATTENDANCE_CRITERIA/100*t)-a);m=`Attend next ${n} class${n>1?'es':''}.`;c='text-orange-500';}else{const b=Math.floor(a/(C.ATTENDANCE_CRITERIA/100))-t;m=b>0?`Can miss ${b} class${b>1?'es':''}.`:`On the edge!`;c=b>0?'text-green-500':'text-yellow-500';} return{p,m,c,bonusMarks}; };
-
-            // --- Main Render Function ---
+            const calculateSubjectData = (s) => { const a=(s.lecture.attended||0)+(s.tutorial.attended||0),t=(s.lecture.total||0)+(s.tutorial.total||0),p=t>0?(a/t*100):0; let m,c; const bonusMarks=getBonusMarks(p); if(t===0){m=`Add classes to begin.`;c='text-muted-color';}else if(p<C.ATTENDANCE_CRITERIA){const n=Math.ceil((C.ATTENDANCE_CRITERIA/100*t)-a);m=`Attend next ${n} class${n>1?'es':''}.`;c='text-orange-500';}else{const b=Math.floor(a/(C.ATTENDANCE_CRITERIA/100))-t;m=b>0?`Can miss ${b} class${b>1?'es':''}.`:`On the edge!`;c=b>0?'text-green-500':'text-yellow-500';} return{p,m,c,bonusMarks}; };
+            
+            // --- Rendering ---
             function render() {
                 D.subjectsContainer.innerHTML = '';
                 const hasSubjects = S.subjects.length > 0;
                 D.emptyState.classList.toggle('hidden', hasSubjects);
                 D.subjectsContainer.classList.toggle('hidden', !hasSubjects);
                 if(hasSubjects) S.subjects.forEach(s => D.subjectsContainer.appendChild(createSubjectElement(s)));
+                updateStats();
                 renderOverallSummary();
                 D.endSemesterText.textContent = S.semester % 2 === 0 ? 'End Even Sem' : 'End Odd Sem';
                 saveState();
             }
 
-            const renderOverallSummary = () => { const o = S.subjects.reduce((a,s)=>{a.att+=(s.theoryAttended||0)+(s.tutorialAttended||0);a.tot+=(s.theoryTotal||0)+(s.tutorialTotal||0);return a;},{att:0,tot:0}); const p=o.tot>0?(o.att/o.tot*100):0; let n=''; if(p<C.ATTENDANCE_CRITERIA&&o.tot>0){const N=Math.ceil((C.ATTENDANCE_CRITERIA/100*o.tot)-o.att);n=`<div class="text-xs mt-1">Need ${N} more</div>`;} D.overallSummary.innerHTML=`<div class="vibe-card p-4 rounded-xl shadow-md"><h3 class="text-xs font-medium text-muted-color">Total Attended</h3><div class="text-2xl font-bold">${o.att}</div></div><div class="vibe-card p-4 rounded-xl shadow-md"><h3 class="text-xs font-medium text-muted-color">Total Classes</h3><div class="text-2xl font-bold">${o.tot}</div></div><div class="vibe-card p-4 rounded-xl shadow-md col-span-2 ${p<C.ATTENDANCE_CRITERIA?'bg-orange-100 dark:bg-orange-900/40':'bg-green-100 dark:bg-green-900/40'}"><h3 class="text-xs font-medium ${p<C.ATTENDANCE_CRITERIA?'text-orange-800 dark:text-orange-200':'text-green-800 dark:text-green-200'}">Overall Percentage</h3><div class="text-3xl font-bold ${p<C.ATTENDANCE_CRITERIA?'text-orange-600 dark:text-orange-300':'text-green-600 dark:text-green-300'}">${p.toFixed(2)}%</div>${n}</div>`;};
+            const renderOverallSummary = () => { const o = S.subjects.reduce((a,s)=>{a.att+=(s.lecture.attended||0)+(s.tutorial.attended||0);a.tot+=(s.lecture.total||0)+(s.tutorial.total||0);return a;},{att:0,tot:0}); const p=o.tot>0?(o.att/o.tot*100):0; let n=''; if(p<C.ATTENDANCE_CRITERIA&&o.tot>0){const N=Math.ceil((C.ATTENDANCE_CRITERIA/100*o.tot)-o.att);n=`<div class="text-xs mt-1">Need ${N} more</div>`;} D.overallSummary.innerHTML=`<div class="vibe-card p-4 rounded-xl shadow-md"><h3 class="text-xs font-medium text-muted-color">Total Attended</h3><div class="text-2xl font-bold">${o.att}</div></div><div class="vibe-card p-4 rounded-xl shadow-md"><h3 class="text-xs font-medium text-muted-color">Total Classes</h3><div class="text-2xl font-bold">${o.tot}</div></div><div class="vibe-card p-4 rounded-xl shadow-md col-span-2 ${p<C.ATTENDANCE_CRITERIA?'bg-orange-100 dark:bg-orange-900/40':'bg-green-100 dark:bg-green-900/40'}"><h3 class="text-xs font-medium ${p<C.ATTENDANCE_CRITERIA?'text-orange-800 dark:text-orange-200':'text-green-800 dark:text-green-200'}">Overall Percentage</h3><div class="text-3xl font-bold ${p<C.ATTENDANCE_CRITERIA?'text-orange-600 dark:text-orange-300':'text-green-600 dark:text-green-300'}">${p.toFixed(2)}%</div>${n}</div>`;};
             
-            function createSubjectElement(s) { const c=calculateSubjectData(s),el=document.createElement('div'); el.className='vibe-card p-5 rounded-2xl shadow-lg space-y-4 fade-in'; el.innerHTML=`<div class="flex justify-between items-start"><input type="text" value="${s.name}" class="subject-name-input" placeholder="Subject Name"><button data-remove-id="${s.id}" class="remove-btn text-muted-color hover:text-red-500 p-1"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg></button></div><div><div class="h-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full"><div class="progress-bar h-2 rounded-full" style="width:${c.p}%; background-color:${c.p<C.ATTENDANCE_CRITERIA?'#f97316':'#22c55e'};"></div></div><div class="flex justify-between items-center mt-2 text-sm"><span class="${c.c} font-medium">${c.m}</span><div class="text-right"><span class="font-bold text-lg">${c.p.toFixed(1)}%</span><div class="text-xs text-muted-color">Marks: <b class="text-accent-color">${c.bonusMarks}/5</b></div></div></div></div><div class="grid grid-cols-2 gap-4 pt-4 border-t border-border-color">${createClassTypeControl('theory',s)}${createClassTypeControl('tutorial',s)}</div><div class="flex justify-between items-center pt-2 border-t border-border-color"><button data-ai-id="${s.id}" class="ai-btn text-sm font-semibold flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 text-accent-color">AI Study Helper</button><div class="flex gap-2"><button data-planner-id="${s.id}" class="planner-btn text-sm font-semibold flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700">Planner</button></div></div>`; el.querySelector('.subject-name-input').addEventListener('change',(e)=>{s.name=e.target.value;saveState();}); el.querySelector('.remove-btn').addEventListener('click',()=>removeSubject(s.id)); el.querySelector('.planner-btn').addEventListener('click',()=>openPlannerModal(s.id)); el.querySelector('.ai-btn').addEventListener('click',()=>getAIStudyTip(s.id)); ['theory','tutorial'].forEach(t=>{const a=`${t}Attended`,o=`${t}Total`; el.querySelector(`[data-type="${a}-plus"]`).addEventListener('click',()=>handleControlClick(s,a,1)); el.querySelector(`[data-type="${o}-plus"]`).addEventListener('click',()=>handleControlClick(s,o,1)); el.querySelector(`[data-type="${a}-minus"]`).addEventListener('click',()=>handleControlClick(s,a,-1)); el.querySelector(`[data-type="${o}-minus"]`).addEventListener('click',()=>handleControlClick(s,o,-1)); }); return el; }
-            const createClassTypeControl = (t,s) => {const a=s[`${t}Attended`],o=s[`${t}Total`],p=o>0?(a/o*100):0; return`<div><div class="flex justify-between items-center mb-2"><h4 class="font-semibold text-sm">${t.charAt(0).toUpperCase()+t.slice(1)}</h4><span class="text-xs font-medium text-muted-color">${p.toFixed(0)}%</span></div><div class="flex items-center justify-between bg-gray-100 dark:bg-gray-900/50 p-2 rounded-lg"><button data-type="${t}Attended-plus" class="btn-control text-green-500">+</button><div class="text-center"><span class="font-bold text-lg">${a}</span><span class="text-muted-color">/</span><span class="font-bold text-lg">${o}</span></div><button data-type="${t}Total-plus" class="btn-control">+</button></div><div class="flex items-center justify-between text-xs mt-1 px-1"><button data-type="${t}Attended-minus" class="text-muted-color hover:text-red-500">- Attended</button><button data-type="${t}Total-minus" class="text-muted-color hover:text-red-500">- Total</button></div></div>`;};
+            function createSubjectElement(s) { const c=calculateSubjectData(s),el=document.createElement('div'); const streakVisible=s.streak>=2; el.className='vibe-card p-5 rounded-2xl shadow-lg space-y-4 fade-in'; el.innerHTML=`<div class="flex justify-between items-start"><input type="text" value="${s.name}" class="subject-name-input" placeholder="Subject Name"><button data-remove-id="${s.id}" class="remove-btn text-muted-color hover:text-red-500 p-1"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg></button></div><div><div class="h-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full"><div class="progress-bar h-2 rounded-full" style="width:${c.p}%; background-color:${c.p<C.ATTENDANCE_CRITERIA?'#f97316':'#22c55e'};"></div></div><div class="flex justify-between items-center mt-2 text-sm"><span class="${c.c} font-medium">${c.m}</span><div class="text-right"><span class="font-bold text-lg">${c.p.toFixed(1)}%</span><div class="text-xs text-muted-color">Marks: <b class="text-accent-color">${c.bonusMarks}/5</b></div>${c.bonusMarks >= 4 ? `<div class="text-xs font-bold text-yellow-600 dark:text-yellow-400 mt-1">Potential G.O.A.T.? 🐐</div>` : ''}</div></div></div><div class="grid grid-cols-2 gap-4 pt-4 border-t border-border-color">${createClassTypeControl('lecture',s)}${createClassTypeControl('tutorial',s)}</div><div class="flex justify-between items-center pt-2 border-t border-border-color"><div class="flex items-center gap-1.5 text-orange-500 ${streakVisible?'':'opacity-0'}"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4.5c3 0 5.5 2.5 5.5 5.5 0 2.22-1.3 4.16-3.25 5-1.38 2.34-4.25 2.5-4.25 2.5s-.78-2.17-2.25-3.5c-2.33-2.17-2.25-5.5-2.25-5.5C8 7 10.5 4.5 14.5 4.5z"/><path d="M9 12c-2-2-2.5-4-2.5-4 1.5-2 4-2.5 4-2.5"/></svg><span class="font-bold text-sm">${s.streak} Day Streak</span></div><div class="flex gap-2"><button data-planner-id="${s.id}" class="planner-btn text-sm font-semibold flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700">Planner</button></div></div>`; el.querySelector('.subject-name-input').addEventListener('change',(e)=>{s.name=e.target.value;saveState();}); el.querySelector('.remove-btn').addEventListener('click',()=>removeSubject(s.id)); el.querySelector('.planner-btn').addEventListener('click',()=>openPlannerModal(s.id));['lecture','tutorial'].forEach(t=>{el.querySelector(`[data-action="${t}-attend"]`).addEventListener('click',()=>handleControlClick(s.id,t,'attend'));el.querySelector(`[data-action="${t}-miss"]`).addEventListener('click',()=>handleControlClick(s.id,t,'miss'));el.querySelector(`[data-action="${t}-undo"]`).addEventListener('click',()=>handleControlClick(s.id,t,'undo'));});return el;}
+            const createClassTypeControl=(t,s)=>{const a=s[t].attended,o=s[t].total,p=o>0?(a/o*100):0;return`<div><div class="flex justify-between items-center mb-2"><h4 class="font-semibold text-sm">${t.charAt(0).toUpperCase()+t.slice(1)}</h4><span class="text-xs font-medium text-muted-color">${p.toFixed(0)}%</span></div><div class="flex items-center justify-between bg-gray-100 dark:bg-gray-900/50 p-2 rounded-lg"><div class="text-center w-full"><span class="font-bold text-lg">${a}</span><span class="text-muted-color"> / </span><span class="font-bold text-lg">${o}</span></div></div><div class="flex items-center justify-between text-xs mt-2 gap-2"><button data-action="${t}-attend" class="flex-1 px-2 py-1 bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300 rounded font-semibold text-xs">+ Attended</button><button data-action="${t}-miss" class="flex-1 px-2 py-1 bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300 rounded font-semibold text-xs">+ Missed</button><button data-action="${t}-undo" class="px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded text-xs">Undo</button></div></div>`;};
             
-            function handleControlClick(s,p,d) { let n=(s[p]||0)+d; if(n<0)n=0; const oP=p.replace('Attended','Total'),aP=p.replace('Total','Attended'); if(p.includes('Total')&&n<(s[aP]||0))n=s[aP]; if(p.includes('Attended')&&n>(s[oP]||0))n=s[oP]; s[p]=n; render(); }
-
-            // --- Modals ---
-            const closeModal = () => D.modalContainer.innerHTML = '';
-            const openModal = (title, content, size = 'max-w-lg') => { D.modalContainer.innerHTML = `<div id="modal-overlay" class="modal-overlay active"><div class="modal-content vibe-card rounded-2xl shadow-2xl p-6 w-full ${size}"><div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold">${title}</h3><button id="modal-close-btn" class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">&times;</button></div>${content}</div></div>`; getEl('modal-overlay').addEventListener('click', (e) => { if (e.target.id === 'modal-overlay') closeModal(); }); getEl('modal-close-btn').addEventListener('click', closeModal); };
-            
-            // --- Features ---
-            function openPlannerModal(id) {
-                const subject = getSubject(id);
+            function handleControlClick(subjectId, classType, action) {
+                const subject = getSubject(subjectId);
                 if (!subject) return;
-                let content = `<div class="space-y-4"><div class="grid grid-cols-2 gap-4"><div><label class="text-sm font-medium">If I attend next...</label><input id="planner-attend" type="number" min="0" value="0" class="mt-1 w-full p-2 rounded-md bg-gray-100 dark:bg-gray-800 border-transparent focus:ring-accent-color"></div><div><label class="text-sm font-medium">And I miss next...</label><input id="planner-miss" type="number" min="0" value="0" class="mt-1 w-full p-2 rounded-md bg-gray-100 dark:bg-gray-800 border-transparent focus:ring-accent-color"></div></div><div id="planner-result" class="p-4 rounded-lg bg-gray-100 dark:bg-gray-800 text-center"></div></div>`;
-                openModal(`Planner: ${subject.name}`, content);
-                const attendInput = getEl('planner-attend'), missInput = getEl('planner-miss'), resultDiv = getEl('planner-result');
-                const updatePlanner = () => {
-                    const attendedNow = (subject.theoryAttended||0) + (subject.tutorialAttended||0);
-                    const totalNow = (subject.theoryTotal||0) + (subject.tutorialTotal||0);
-                    const attendNext = parseInt(attendInput.value) || 0;
-                    const missNext = parseInt(missInput.value) || 0;
-                    const futureAttended = attendedNow + attendNext;
-                    const futureTotal = totalNow + attendNext + missNext;
-                    const futurePercent = futureTotal > 0 ? (futureAttended / futureTotal * 100) : 0;
-                    const bonusMarks = getBonusMarks(futurePercent);
-                    resultDiv.innerHTML = `<div class="text-sm text-muted-color">Projected Attendance</div><div class="text-3xl font-bold my-1">${futurePercent.toFixed(2)}%</div><div class="text-sm font-medium">Bonus Marks: <span class="text-accent-color font-bold">${bonusMarks} / 5</span></div>`;
+
+                const breakStreak = () => {
+                    subject.streak = 0;
+                    if(subject.badges) {
+                        subject.badges.streak5Achieved = false;
+                        subject.badges.streak7Achieved = false;
+                        subject.badges.streak10Achieved = false;
+                    }
                 };
-                attendInput.addEventListener('input', updatePlanner);
-                missInput.addEventListener('input', updatePlanner);
-                updatePlanner();
-            }
 
-            function openSemesterHistoryModal() {
-                if (S.semesterHistory.length === 0) {
-                    openModal('Semester History', '<p class="text-center text-muted-color">No completed semesters found. Use the "End Semester" button to archive your progress.</p>');
-                    return;
+                subject.previousState = JSON.parse(JSON.stringify(subject));
+
+                if (action === 'attend') {
+                    subject[classType].attended++;
+                    subject[classType].total++;
+                    if (classType === 'lecture') {
+                        subject.streak = (subject.lastAction === 'attend-lecture') ? subject.streak + 1 : 1;
+                    }
+                    subject.lastAction = `attend-${classType}`;
+                } else if (action === 'miss') {
+                    subject[classType].total++;
+                    if (classType === 'lecture') {
+                        breakStreak();
+                    }
+                    subject.lastAction = `miss-${classType}`;
+                } else if (action === 'undo') {
+                    const prevState = subject.previousState;
+                    if (prevState) {
+                        subject.lecture = prevState.lecture;
+                        subject.tutorial = prevState.tutorial;
+                        subject.streak = prevState.streak;
+                        subject.lastAction = prevState.lastAction;
+                        subject.badges = prevState.badges;
+                    }
                 }
-                let content = '<div class="space-y-6 max-h-[70vh] overflow-y-auto pr-2">';
-                [...S.semesterHistory].reverse().forEach(sem => {
-                    content += `<div class="vibe-card p-4 rounded-lg"><h4 class="font-bold text-md mb-3">${sem.course} - Semester ${sem.semester}</h4><div class="space-y-2">`;
-                    sem.subjects.forEach(sub => {
-                        const barColor = sub.percentage >= C.ATTENDANCE_CRITERIA ? 'bg-green-500' : 'bg-orange-500';
-                        content += `
-                            <div>
-                                <div class="flex justify-between items-baseline mb-1">
-                                    <span class="font-semibold text-sm">${sub.name}</span>
-                                    <span class="text-xs text-muted-color">Marks: <b class="text-accent-color">${sub.bonusMarks}/5</b></span>
-                                </div>
-                                <div class="h-2.5 w-full bg-gray-200 dark:bg-gray-700 rounded-full">
-                                    <div class="${barColor} h-2.5 rounded-full" style="width: ${sub.percentage}%"></div>
-                                </div>
-                                 <div class="text-right text-xs font-medium mt-1">${sub.percentage.toFixed(1)}%</div>
-                            </div>`;
-                    });
-                    content += '</div></div>';
-                });
-                content += '</div>';
-                openModal('Semester History', content, 'max-w-2xl');
+
+                if (Math.abs(subject.lecture.total - subject.lecture.attended) >= 4) {
+                    if(subject.streak > 0) breakStreak();
+                }
+
+                checkAndAwardBadges(subject);
+                render();
             }
 
+            // --- Modals & Notifications ---
+            const closeModal = () => D.modalContainer.innerHTML = '';
+            const openModal = (title, content, size = 'max-w-lg') => { D.modalContainer.innerHTML = `<div id="modal-overlay" class="modal-overlay active"><div class="modal-content vibe-card rounded-2xl shadow-2xl p-6 w-full ${size}"><div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold">${title}</h3><button id="modal-close-btn" class="p-1 rounded-full text-2xl leading-none hover:bg-gray-200 dark:hover:bg-gray-700">&times;</button></div>${content}</div></div>`; getEl('modal-overlay').addEventListener('click', (e) => { if (e.target.id === 'modal-overlay') closeModal(); }); getEl('modal-close-btn').addEventListener('click', closeModal); };
+            const showBadgeNotification = (badgeName) => { const el=document.createElement('div'); el.className='fixed top-5 right-5 vibe-card p-4 rounded-xl shadow-lg text-sm font-semibold pop-in z-50'; el.innerHTML=`Goddamn! You just unlocked the <b class="text-accent-color">${badgeName}</b> badge!`; document.body.appendChild(el); setTimeout(()=>el.remove(),4000);};
+            const openGoatModal = (subjects, onConfirm) => { const content = `<div class="text-center"><div class="text-6xl mb-4">🐐</div><h2 class="text-2xl font-bold text-yellow-500">G.O.A.T. STATUS ACHIEVED!</h2><p class="text-muted-color mt-2 mb-6">You are the Greatest Of All Time for getting 5/5 bonus marks in: <b class="text-text-color">${subjects}</b>. Incredible work!</p><button id="goat-ok-btn" class="w-full px-4 py-3 rounded-lg font-semibold text-lg bg-accent-color text-white">Awesome!</button></div>`; openModal('Holy Grail Unlocked!', content, 'max-w-md'); getEl('goat-ok-btn').addEventListener('click', () => { closeModal(); onConfirm(); }); };
+
+            // --- Features ---
+            function openPlannerModal(id){const s=getSubject(id);if(!s)return;let content=`<div class="space-y-4"><div class="grid grid-cols-2 gap-4"><div><label class="text-sm font-medium">If I attend next...</label><input id="planner-attend" type="number" min="0" value="0" class="mt-1 w-full p-2 rounded-md bg-gray-100 dark:bg-gray-800 border-transparent focus:ring-accent-color"></div><div><label class="text-sm font-medium">And I miss next...</label><input id="planner-miss" type="number" min="0" value="0" class="mt-1 w-full p-2 rounded-md bg-gray-100 dark:bg-gray-800 border-transparent focus:ring-accent-color"></div></div><div id="planner-result" class="p-4 rounded-lg bg-gray-100 dark:bg-gray-800 text-center"></div></div>`;openModal(`Planner: ${s.name}`,content);const aI=getEl('planner-attend'),mI=getEl('planner-miss'),rD=getEl('planner-result');const uP=()=>{const aN=(s.lecture.attended||0)+(s.tutorial.attended||0);const tN=(s.lecture.total||0)+(s.tutorial.total||0);const aNxt=parseInt(aI.value)||0;const mNxt=parseInt(mI.value)||0;const fA=aN+aNxt;const fT=tN+aNxt+mNxt;const fP=fT>0?(fA/fT*100):0;const bM=getBonusMarks(fP);rD.innerHTML=`<div class="text-sm text-muted-color">Projected Attendance</div><div class="text-3xl font-bold my-1">${fP.toFixed(2)}%</div><div class="text-sm font-medium">Bonus Marks: <span class="text-accent-color font-bold">${bM}/5</span></div>`;};aI.addEventListener('input',uP);mI.addEventListener('input',uP);uP();}
+            function deleteSemesterHistory(index) { openModal('Confirm Deletion',`<p class="text-muted-color mb-6">Are you sure you want to permanently delete this semester's history?</p><div class="flex justify-end gap-3"><button id="modal-cancel" class="px-4 py-2 rounded-lg font-semibold text-sm bg-gray-200 dark:bg-gray-600">Cancel</button><button id="modal-confirm-delete" class="px-4 py-2 rounded-lg font-semibold text-sm bg-red-600 text-white">Delete</button></div>`); getEl('modal-cancel').addEventListener('click',()=>openSemesterHistoryModal()); getEl('modal-confirm-delete').addEventListener('click',()=>{S.semesterHistory.splice(index,1);saveState();openSemesterHistoryModal();}); }
+            function openSemesterHistoryModal(){if(S.semesterHistory.length===0){openModal('Semester History','<p class="text-center text-muted-color">No completed semesters found. Use the "End Semester" button to archive your progress.</p>');return;}let content='<div class="space-y-6 max-h-[70vh] overflow-y-auto pr-2">';[...S.semesterHistory].reverse().forEach((sem,revIdx)=>{const originalIndex=S.semesterHistory.length-1-revIdx;content+=`<div class="vibe-card p-4 rounded-lg"><div class="flex justify-between items-center mb-3"><h4 class="font-bold text-md">${sem.course} - Semester ${sem.semester}</h4><button data-delete-history-idx="${originalIndex}" class="history-delete-btn p-1.5 rounded-full hover:bg-red-100 dark:hover:bg-red-900/50 text-muted-color hover:text-red-500"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-1 1v1H4a1 1 0 000 2h1v9a2 2 0 002 2h6a2 2 0 002-2V6h1a1 1 0 100-2h-4V3a1 1 0 00-1-1H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd" /></svg></button></div><div class="space-y-2">`;sem.subjects.forEach(sub=>{const barColor=sub.percentage>=C.ATTENDANCE_CRITERIA?'bg-green-500':'bg-orange-500';content+=`<div><div class="flex justify-between items-baseline mb-1"><span class="font-semibold text-sm">${sub.name}</span><span class="text-xs text-muted-color">Marks: <b class="text-accent-color">${sub.bonusMarks}/5</b></span></div><div class="h-2.5 w-full bg-gray-200 dark:bg-gray-700 rounded-full"><div class="${barColor} h-2.5 rounded-full" style="width: ${sub.percentage}%"></div></div><div class="text-right text-xs font-medium mt-1">${sub.percentage.toFixed(1)}%</div></div>`;});if(sem.badges&&Object.values(sem.badges).some(v=>v||(typeof v==='object'&&v!==null))){content+=`<div class="pt-2 mt-2 border-t border-border-color"><h5 class="text-xs font-bold text-muted-color mb-1">BADGES EARNED</h5><div class="flex flex-wrap gap-2">`;if(sem.badges.rookieNerd)content+=`<div class="text-xs font-semibold bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded-full">Rookie Nerd x${sem.badges.rookieNerd}</div>`;if(sem.badges.intermediateNerd)content+=`<div class="text-xs font-semibold bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded-full">Intermediate Nerd x${sem.badges.intermediateNerd}</div>`;if(sem.badges.proMaxNerd)content+=`<div class="text-xs font-semibold bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded-full">Nerd Pro Max x${sem.badges.proMaxNerd}</div>`;if(sem.badges.suckUp)content+=`<div class="text-xs font-semibold bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded-full">Suck Up</div>`;if(sem.badges.seenzoned)content+=`<div class="text-xs font-semibold bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded-full">Seenzoned</div>`;if(sem.badges.goat)content+=`<div class="text-xs font-semibold bg-yellow-400/80 text-yellow-900 px-2 py-1 rounded-full">G.O.A.T</div>`;content+=`</div></div>`;}content+='</div></div>';});content+='</div>';openModal('Semester History',content,'max-w-2xl');document.querySelectorAll('.history-delete-btn').forEach(btn=>{btn.addEventListener('click',(e)=>{const idx=parseInt(e.currentTarget.getAttribute('data-delete-history-idx'));deleteSemesterHistory(idx);});});}
             function handleEndSemester() {
                 if (S.subjects.length === 0) {
-                     openModal('End Semester', '<p class="text-center text-muted-color">Cannot end semester with no subjects. Please add subjects and track attendance first.</p>');
-                     return;
+                    openModal('End Semester', '<p class="text-center text-muted-color">Cannot end semester with no subjects.</p>');
+                    return;
                 }
-                const summary = {
-                    course: S.course, semester: S.semester,
-                    subjects: S.subjects.map(s => {
-                        const {p, bonusMarks} = calculateSubjectData(s);
-                        return { name: s.name, percentage: p, bonusMarks: bonusMarks };
-                    })
+                const goatSubjects = S.subjects.filter(s => calculateSubjectData(s).bonusMarks === 5).map(s => s.name);
+                const completeEndSemester = () => {
+                    const summary = { course: S.course, semester: S.semester, subjects: S.subjects.map(s => { const { p, bonusMarks } = calculateSubjectData(s); return { name: s.name, percentage: p, bonusMarks: bonusMarks }; }), badges: S.subjects.reduce((acc, s) => { for (const key in s.badges) { if (s.badges[key] && !key.includes('Achieved')) { if (typeof s.badges[key] === 'number') acc[key] = (acc[key] || 0) + s.badges[key]; else acc[key] = s.badges[key]; } } return acc; }, {}) };
+                    if (goatSubjects.length > 0) summary.badges.goat = true;
+                    S.semesterHistory.push(summary);
+                    resetData();
+                    saveState();
+                    openSemesterHistoryModal();
                 };
-                S.semesterHistory.push(summary);
-                resetData();
-                openSemesterHistoryModal();
-            }
-            
-            async function getAIStudyTip(subjectId) {
-                const subject = getSubject(id);
-                if (!subject) return;
-                openModal(`AI Study Helper: ${subject.name}`, `<div id="ai-response" class="min-h-[8rem] flex items-center justify-center"><div class="spinner"></div></div>`);
-                const userQuery = `I am a university student studying '${subject.name}'. Give me one, simple, and highly actionable study tip to help me succeed in this subject. Keep it concise and practical.`;
-                const systemPrompt = "You are an expert academic tutor. Provide a single, concrete study tip for the given university-level subject. The tip should be encouraging and easy for a busy student to implement immediately. Do not be generic; tailor the tip to the subject. For example, for 'Calculus', suggest a specific practice technique, not just 'do more problems'.";
-                const apiKey = ""; 
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-                try {
-                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: userQuery }] }], systemInstruction: { parts: [{ text: systemPrompt }] } }) });
-                    if (!response.ok) throw new Error(`API error: ${response.statusText}`);
-                    const result = await response.json();
-                    const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
-                    getEl('ai-response').innerHTML = text ? `<p>${text.replace(/\n/g, '<br>')}</p>` : `<p class="text-red-500">Could not generate a tip.</p>`;
-                } catch (error) { console.error("Gemini API call failed:", error); getEl('ai-response').innerHTML = `<p class="text-red-500">Sorry, the AI helper couldn't be reached.</p>`; }
+                if (goatSubjects.length > 0) {
+                    openGoatModal(goatSubjects.join(', '), completeEndSemester);
+                } else {
+                    completeEndSemester();
+                }
             }
 
+            // --- Badges & Stats ---
+            function checkAndAwardBadges(subject){const streak=subject.streak||0;if(!subject.badges)subject.badges=getNewBadgesObject();const awardStreakBadge=(badgeKey,achievementKey,name)=>{if(!subject.badges[achievementKey]){subject.badges[badgeKey]++;subject.badges[achievementKey]=!0;showBadgeNotification(name);}};if(streak>=5)awardStreakBadge('rookieNerd','streak5Achieved','Rookie Nerd');if(streak>=7)awardStreakBadge('intermediateNerd','streak7Achieved','Intermediate Nerd');if(streak>=10)awardStreakBadge('proMaxNerd','streak10Achieved','Nerd Pro Max');const totalClasses=(subject.lecture.total||0)+(subject.tutorial.total||0);if(totalClasses>=C.HIDDEN_BADGE_THRESHOLD){const stats=getStats();if(stats.maxSub===subject.name&&!subject.badges.suckUp){subject.badges.suckUp=subject.name;showBadgeNotification("Suck Up");}if(stats.minSub===subject.name&&!subject.badges.seenzoned){subject.badges.seenzoned=subject.name;showBadgeNotification("Seenzoned");}}}
+            function getStats(){if(S.subjects.length<2)return{maxSub:null,minSub:null};let minP=101,maxP=-1,minSub=null,maxSub=null;S.subjects.forEach(s=>{const{p}=calculateSubjectData(s);if((s.lecture.total+s.tutorial.total)>0){if(p>maxP){maxP=p;maxSub=s.name;}if(p<minP){minP=p;minSub=s.name;}}});return{maxSub,minSub};}
+            function updateStats(){const{maxSub,minSub}=getStats();if(maxSub||minSub){D.statsContainer.innerHTML=`<div class="vibe-card p-4 rounded-xl text-center"><h3 class="text-xs font-medium text-muted-color">Most Attended</h3><div class="text-lg font-bold truncate">${maxSub||'N/A'}</div></div><div class="vibe-card p-4 rounded-xl text-center"><h3 class="text-xs font-medium text-muted-color">Least Attended</h3><div class="text-lg font-bold truncate">${minSub||'N/A'}</div></div>`;}else{D.statsContainer.innerHTML='';}}
+            function openBadgesModal(){const overallBadges=S.subjects.reduce((acc,s)=>{for(const key in s.badges){if(s.badges[key]&&!key.includes('Achieved')){if(typeof s.badges[key]==='number')acc[key]=(acc[key]||0)+s.badges[key];else acc[key]=s.badges[key];}}return acc;},getNewBadgesObject());const badgeHTML=(unlocked,color,emoji,name,count,tooltip)=>`<div class="badge tooltip"><span class="tooltiptext">${tooltip}</span><div class="badge-circle ${unlocked?'unlocked':''}" style="${unlocked?'--color:'+color:''}""><span class="badge-emoji">${emoji}</span>${(unlocked&&count>1)?`<div class="badge-counter">${count}</div>`:''}</div><p class="font-bold text-sm mt-2">${name}</p></div>`;const content=`<div class="grid grid-cols-3 gap-y-6 gap-x-4">${badgeHTML(overallBadges.rookieNerd>0,'var(--green-color)','🤣','Rookie Nerd',overallBadges.rookieNerd,'Achieve a 5-lecture attendance streak in any subject.')}${badgeHTML(overallBadges.intermediateNerd>0,'var(--green-color)','😮','Intermediate Nerd',overallBadges.intermediateNerd,'Achieve a 7-lecture attendance streak.')}${badgeHTML(overallBadges.proMaxNerd>0,'var(--green-color)','🥀','Nerd Pro Max',overallBadges.proMaxNerd,'Achieve a 10-lecture attendance streak.')}${badgeHTML(overallBadges.suckUp,'var(--badge-blue)',overallBadges.suckUp?'👅':'❓','Suck Up',0,overallBadges.suckUp?`You attend '${overallBadges.suckUp}' the most!`:'Hidden Badge: Keep attending!')}${badgeHTML(overallBadges.seenzoned,'var(--badge-red)',overallBadges.seenzoned?'🥺':'❓','Seenzoned',0,overallBadges.seenzoned?`You attend '${overallBadges.seenzoned}' the least.`:'Hidden Badge: Don\'t miss classes!')}${badgeHTML(overallBadges.goat,'var(--gold-color)','🐐','G.O.A.T',0,'End a semester with 5/5 bonus marks in any subject.')}</div>`;openModal('Badge Collection',content);}
+            
             // --- Initial Setup ---
             function init() {
                 loadTheme();
@@ -223,18 +242,11 @@
                 D.semesterSelect.addEventListener('change', (e) => { S.semester = parseInt(e.target.value, 10); handleContextChange(); });
                 D.addSubjectBtn.addEventListener('click', addSubject);
                 D.historyBtn.addEventListener('click', openSemesterHistoryModal);
+                D.badgesBtn.addEventListener('click', openBadgesModal);
                 D.themeToggle.addEventListener('click', () => { S.theme = S.theme === 'light' ? 'dark' : 'light'; applyTheme(); saveTheme(); });
-                
-                const addConfirmation = (btn, title, msg, onConfirm) => {
-                     btn.addEventListener('click', () => {
-                        openModal(title, `<p class="text-muted-color mb-6">${msg}</p><div class="flex justify-end gap-3"><button id="modal-cancel" class="px-4 py-2 rounded-lg font-semibold text-sm bg-gray-200 dark:bg-gray-600">Cancel</button><button id="modal-confirm" class="px-4 py-2 rounded-lg font-semibold text-sm ${btn === D.resetDataBtn ? 'bg-red-600' : 'bg-blue-600'} text-white">Confirm</button></div>`);
-                        getEl('modal-cancel').addEventListener('click', closeModal);
-                        getEl('modal-confirm').addEventListener('click', () => { onConfirm(); closeModal(); });
-                     });
-                };
+                const addConfirmation = (btn, title, msg, onConfirm) => { btn.addEventListener('click', () => { openModal(title, `<p class="text-muted-color mb-6">${msg}</p><div class="flex justify-end gap-3"><button id="modal-cancel" class="px-4 py-2 rounded-lg font-semibold text-sm bg-gray-200 dark:bg-gray-600">Cancel</button><button id="modal-confirm" class="px-4 py-2 rounded-lg font-semibold text-sm ${btn === D.resetDataBtn ? 'bg-red-600' : 'bg-blue-600'} text-white">Confirm</button></div>`); getEl('modal-cancel').addEventListener('click', closeModal); getEl('modal-confirm').addEventListener('click', () => { onConfirm(); closeModal(); }); }); };
                 addConfirmation(D.resetDataBtn, 'Confirm Reset', 'This will permanently delete the current semester\'s data. This action cannot be undone.', resetData);
                 addConfirmation(D.endSemesterBtn, 'Confirm End Semester', 'This will archive the current semester\'s results and start a fresh slate. Are you sure?', handleEndSemester);
-
                 loadState();
                 render();
             }
@@ -243,3 +255,4 @@
     </script>
 </body>
 </html>
+
