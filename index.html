@@ -56,7 +56,7 @@
     <div class="max-w-7xl mx-auto">
         <header class="flex justify-between items-center mb-6">
             <div class="text-left">
-                <h1 class="text-5xl sm:text-6xl font-cursive font-bold text-gray-900 dark:text-white">Roll Call</h1>
+                <h1 class="text-5xl sm:text-6xl font-cursive font-bold text-black dark:text-white">Roll Call</h1>
                 <p class="text-muted-color mt-1 pl-1">Your personal attendance manager for USME, DTU.</p>
             </div>
             <div class="flex items-center gap-2">
@@ -73,10 +73,10 @@
                  <div class="bg-gray-100 dark:bg-gray-800/50 p-4 rounded-xl"><label for="semester-select" class="block text-xs font-medium text-muted-color mb-1">Semester</label><select id="semester-select" class="w-full bg-transparent border-0 text-sm font-semibold p-0 focus:ring-0"></select></div>
             </div>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                 <button id="add-subject-btn" class="p-3 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-200 dark:hover:bg-gray-700/60 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg><span class="font-semibold text-sm">Add Subject</span></button>
-                 <button id="history-btn" class="p-3 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-200 dark:hover:bg-gray-700/60 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zm1 11a1 1 0 11-2 0v-4a1 1 0 112 0v4z" /></svg><span class="font-semibold text-sm">History</span></button>
-                 <button id="end-semester-btn" class="p-3 rounded-xl flex items-center justify-center gap-2 text-blue-500 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clip-rule="evenodd" /></svg><span id="end-semester-text" class="font-semibold text-sm">End Semester</span></button>
-                 <button id="reset-data-btn" class="p-3 rounded-xl flex items-center justify-center gap-2 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-1 1v1H4a1 1 0 000 2h1v9a2 2 0 002 2h6a2 2 0 002-2V6h1a1 1 0 100-2h-4V3a1 1 0 00-1-1H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd" /></svg><span class="font-semibold text-sm">Reset Data</span></button>
+                 <button id="add-subject-btn" class="p-3 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-200 dark:hover:bg-gray-700/60 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg><span class="font-bold text-sm">Add Subject</span></button>
+                 <button id="history-btn" class="p-3 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-200 dark:hover:bg-gray-700/60 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zm1 11a1 1 0 11-2 0v-4a1 1 0 112 0v4z" /></svg><span class="font-bold text-sm">History</span></button>
+                 <button id="end-semester-btn" class="p-3 rounded-xl flex items-center justify-center gap-2 text-blue-500 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clip-rule="evenodd" /></svg><span id="end-semester-text" class="font-bold text-sm">End Semester</span></button>
+                 <button id="reset-data-btn" class="p-3 rounded-xl flex items-center justify-center gap-2 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-1 1v1H4a1 1 0 000 2h1v9a2 2 0 002 2h6a2 2 0 002-2V6h1a1 1 0 100-2h-4V3a1 1 0 00-1-1H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd" /></svg><span class="font-bold text-sm">Reset Data</span></button>
             </div>
         </div>
         
@@ -147,7 +147,7 @@
             const renderOverallSummary = () => { const o = S.subjects.reduce((a,s)=>{a.att+=(s.lecture.attended||0)+(s.tutorial.attended||0);a.tot+=(s.lecture.total||0)+(s.tutorial.total||0);return a;},{att:0,tot:0}); const p=o.tot>0?(o.att/o.tot*100):0; let n=''; if(p<C.ATTENDANCE_CRITERIA&&o.tot>0){const N=Math.ceil((C.ATTENDANCE_CRITERIA/100*o.tot)-o.att);n=`<div class="text-xs mt-1">Need ${N} more</div>`;} D.overallSummary.innerHTML=`<div class="vibe-card p-4 rounded-xl shadow-md"><h3 class="text-xs font-medium text-muted-color">Total Attended</h3><div class="text-2xl font-bold">${o.att}</div></div><div class="vibe-card p-4 rounded-xl shadow-md"><h3 class="text-xs font-medium text-muted-color">Total Classes</h3><div class="text-2xl font-bold">${o.tot}</div></div><div class="vibe-card p-4 rounded-xl shadow-md col-span-2 ${p<C.ATTENDANCE_CRITERIA?'bg-orange-100 dark:bg-orange-900/40':'bg-green-100 dark:bg-green-900/40'}"><h3 class="text-xs font-medium ${p<C.ATTENDANCE_CRITERIA?'text-orange-800 dark:text-orange-200':'text-green-800 dark:text-green-200'}">Overall Percentage</h3><div class="text-3xl font-bold ${p<C.ATTENDANCE_CRITERIA?'text-orange-600 dark:text-orange-300':'text-green-600 dark:text-green-300'}">${p.toFixed(2)}%</div>${n}</div>`;};
             
             function createSubjectElement(s) { const c=calculateSubjectData(s),el=document.createElement('div'); const streakVisible=s.streak>=2; el.className='vibe-card p-5 rounded-2xl shadow-lg space-y-4 fade-in'; el.innerHTML=`<div class="flex justify-between items-start"><input type="text" value="${s.name}" class="subject-name-input" placeholder="Subject Name"><button data-remove-id="${s.id}" class="remove-btn text-muted-color hover:text-red-500 p-1"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg></button></div><div><div class="h-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full"><div class="progress-bar h-2 rounded-full" style="width:${c.p}%; background-color:${c.p<C.ATTENDANCE_CRITERIA?'#f97316':'#22c55e'};"></div></div><div class="flex justify-between items-center mt-2 text-sm"><span class="${c.c} font-medium">${c.m}</span><div class="text-right"><span class="font-bold text-lg">${c.p.toFixed(1)}%</span><div class="text-xs text-muted-color">Marks: <b class="text-accent-color">${c.bonusMarks}/5</b></div>${c.bonusMarks >= 4 ? `<div class="text-xs font-bold text-yellow-600 dark:text-yellow-400 mt-1">Potential G.O.A.T.? 🐐</div>` : ''}</div></div></div><div class="grid grid-cols-2 gap-4 pt-4 border-t border-border-color">${createClassTypeControl('lecture',s)}${createClassTypeControl('tutorial',s)}</div><div class="flex justify-between items-center pt-2 border-t border-border-color"><div class="flex items-center gap-1.5 text-orange-500 ${streakVisible?'':'opacity-0'}"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4.5c3 0 5.5 2.5 5.5 5.5 0 2.22-1.3 4.16-3.25 5-1.38 2.34-4.25 2.5-4.25 2.5s-.78-2.17-2.25-3.5c-2.33-2.17-2.25-5.5-2.25-5.5C8 7 10.5 4.5 14.5 4.5z"/><path d="M9 12c-2-2-2.5-4-2.5-4 1.5-2 4-2.5 4-2.5"/></svg><span class="font-bold text-sm">${s.streak} Day Streak</span></div><div class="flex gap-2"><button data-planner-id="${s.id}" class="planner-btn text-sm font-semibold flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700">Planner</button></div></div>`; el.querySelector('.subject-name-input').addEventListener('change',(e)=>{s.name=e.target.value;saveState();}); el.querySelector('.remove-btn').addEventListener('click',()=>removeSubject(s.id)); el.querySelector('.planner-btn').addEventListener('click',()=>openPlannerModal(s.id));['lecture','tutorial'].forEach(t=>{el.querySelector(`[data-action="${t}-attend"]`).addEventListener('click',()=>handleControlClick(s.id,t,'attend'));el.querySelector(`[data-action="${t}-miss"]`).addEventListener('click',()=>handleControlClick(s.id,t,'miss'));el.querySelector(`[data-action="${t}-undo"]`).addEventListener('click',()=>handleControlClick(s.id,t,'undo'));});return el;}
-            const createClassTypeControl=(t,s)=>{const a=s[t].attended,o=s[t].total,p=o>0?(a/o*100):0;return`<div><div class="flex justify-between items-center mb-2"><h4 class="font-semibold text-sm">${t.charAt(0).toUpperCase()+t.slice(1)}</h4><span class="text-xs font-medium text-muted-color">${p.toFixed(0)}%</span></div><div class="flex items-center justify-between bg-gray-100 dark:bg-gray-900/50 p-2 rounded-lg"><div class="text-center w-full"><span class="font-bold text-lg">${a}</span><span class="text-muted-color"> / </span><span class="font-bold text-lg">${o}</span></div></div><div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs mt-2"><button data-action="${t}-attend" class="py-2 sm:py-1 bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300 rounded font-semibold text-xs">+ Attended</button><button data-action="${t}-miss" class="py-2 sm:py-1 bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300 rounded font-semibold text-xs">+ Missed</button><button data-action="${t}-undo" class="col-span-2 sm:col-span-1 py-2 sm:py-1 bg-gray-200 dark:bg-gray-700 rounded text-xs">Undo</button></div></div>`;};
+            const createClassTypeControl=(t,s)=>{const a=s[t].attended,o=s[t].total,p=o>0?(a/o*100):0;return`<div><div class="flex justify-between items-center mb-2"><h4 class="font-semibold text-sm">${t.charAt(0).toUpperCase()+t.slice(1)}</h4><span class="text-xs font-medium text-muted-color">${p.toFixed(0)}%</span></div><div class="flex items-center justify-between bg-gray-100 dark:bg-gray-900/50 p-2 rounded-lg"><div class="text-center w-full"><span class="font-bold text-lg">${a}</span><span class="text-muted-color"> / </span><span class="font-bold text-lg">${o}</span></div></div><div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs mt-2"><button data-action="${t}-attend" class="py-2 sm:py-1 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200 rounded font-bold text-xs">+ Attended</button><button data-action="${t}-miss" class="py-2 sm:py-1 bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-200 rounded font-bold text-xs">+ Missed</button><button data-action="${t}-undo" class="col-span-2 sm:col-span-1 py-2 sm:py-1 bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200 rounded font-bold text-xs">Undo</button></div></div>`;};
             
             function handleControlClick(subjectId, classType, action) {
                 const subject = getSubject(subjectId);
@@ -162,13 +162,16 @@
                     }
                 };
 
-                subject.previousState = JSON.parse(JSON.stringify(subject));
+                // Only save state on actions that change data
+                if (action === 'attend' || action === 'miss') {
+                    subject.previousState = JSON.parse(JSON.stringify(subject));
+                }
 
                 if (action === 'attend') {
                     subject[classType].attended++;
                     subject[classType].total++;
                     if (classType === 'lecture') {
-                        subject.streak = (subject.lastAction === 'attend-lecture') ? subject.streak + 1 : 1;
+                        subject.streak = (subject.lastAction === 'attend-lecture' || subject.lastAction === 'attend-tutorial') ? subject.streak + 1 : 1;
                     }
                     subject.lastAction = `attend-${classType}`;
                 } else if (action === 'miss') {
@@ -180,19 +183,18 @@
                 } else if (action === 'undo') {
                     const prevState = subject.previousState;
                     if (prevState) {
-                        subject.lecture = prevState.lecture;
-                        subject.tutorial = prevState.tutorial;
-                        subject.streak = prevState.streak;
-                        subject.lastAction = prevState.lastAction;
-                        subject.badges = prevState.badges;
+                        // Restore all key properties from the previous state
+                        Object.assign(subject, prevState);
                     }
                 }
 
-                if (Math.abs(subject.lecture.total - subject.lecture.attended) >= 4) {
-                    if(subject.streak > 0) breakStreak();
+                if (action !== 'undo') {
+                    if (Math.abs(subject.lecture.total - subject.lecture.attended) >= 4) {
+                        if(subject.streak > 0) breakStreak();
+                    }
+                    checkAndAwardBadges(subject);
                 }
-
-                checkAndAwardBadges(subject);
+                
                 render();
             }
 
@@ -255,5 +257,8 @@
     </script>
 </body>
 </html>
+
+
+
 
 
