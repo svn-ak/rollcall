@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roll Call | USME DTU</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f3f4f6; --card-bg-color: rgba(255, 255, 255, 0.85); --text-color: #1f2937;
+            --text-muted-color: #6b7280; --border-color: #e5e7eb; --accent-color: #3b82f6;
+        }
+        html.dark {
+            --bg-color: #111827; --card-bg-color: rgba(31, 41, 55, 0.85); --text-color: #f9fafb;
+            --text-muted-color: #9ca3af; --border-color: #374151; --accent-color: #60a5fa;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--text-color); transition: background-color 0.3s, color 0.3s; }
+        .vibe-card { background-color: var(--card-bg-color); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid var(--border-color); transition: all 0.3s; }
+        .subject-name-input { background: transparent; border: none; font-weight: 700; font-size: 1.125rem; padding: 0.25rem; border-radius: 0.375rem; width: 100%; color: var(--text-color); }
+        .subject-name-input:focus { outline: none; background-color: rgba(128, 128, 128, 0.1); }
+        .progress-bar { transition: width 0.4s ease-in-out, background-color 0.4s ease-in-out; }
+        .btn-control { width: 2.25rem; height: 2.25rem; border-radius: 0.375rem; display: flex; align-items: center; justify-content: center; transition: background-color 0.2s, transform 0.1s; background-color: rgba(128, 128, 128, 0.1); }
+        .btn-control:hover { background-color: rgba(128, 128, 128, 0.2); }
+        .btn-control:active { transform: scale(0.95); }
+        .fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s; z-index: 50; }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-content { transform: scale(0.95); transition: transform 0.3s; }
+        .modal-overlay.active .modal-content { transform: scale(1); }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .spinner { border: 2px solid #f3f3f3; border-top: 2px solid var(--accent-color); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
+    </style>
+</head>
+<body class="min-h-screen p-4 sm:p-6 lg:p-8">
+
+    <div class="max-w-7xl mx-auto">
+        <header class="flex justify-between items-center mb-6">
+            <div class="text-left">
+                <div class="flex items-center gap-3">
+                    <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white">Roll Call</h1>
+                    <div class="flex items-center gap-1.5 bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded-full">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-gray-600 dark:text-gray-300"><path d="M12 2.75L14.2801 9.42379L21.5 10.3341L16.208 15.0183L17.6399 21.961L12 18.24L6.36012 21.961L7.79204 15.0183L2.5 10.3341L9.71992 9.42379L12 2.75Z" fill="currentColor"/></svg>
+                        <span class="text-xs font-semibold text-muted-color">powered by Gemini</span>
+                    </div>
+                </div>
+                <p class="text-muted-color mt-1">Your personal attendance manager for USME, DTU.</p>
+            </div>
+            <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"></button>
+        </header>
+
+        <div class="vibe-card p-4 rounded-2xl shadow-md mb-6 space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <div class="bg-gray-100 dark:bg-gray-800/50 p-4 rounded-xl"><label for="course-select" class="block text-xs font-medium text-muted-color mb-1">Course</label><select id="course-select" class="w-full bg-transparent border-0 text-sm font-semibold p-0 focus:ring-0"><option>Bachelors of Economics Honours</option><option>Bachelors of Business Administration Honours</option></select></div>
+                 <div class="bg-gray-100 dark:bg-gray-800/50 p-4 rounded-xl"><label for="semester-select" class="block text-xs font-medium text-muted-color mb-1">Semester</label><select id="semester-select" class="w-full bg-transparent border-0 text-sm font-semibold p-0 focus:ring-0"></select></div>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                 <button id="add-subject-btn" class="p-3 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-200 dark:hover:bg-gray-700/60 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg><span class="font-semibold text-sm">Add Subject</span></button>
+                 <button id="history-btn" class="p-3 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-200 dark:hover:bg-gray-700/60 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zm1 11a1 1 0 11-2 0v-4a1 1 0 112 0v4z" /></svg><span class="font-semibold text-sm">History</span></button>
+                 <button id="end-semester-btn" class="p-3 rounded-xl flex items-center justify-center gap-2 text-blue-500 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clip-rule="evenodd" /></svg><span id="end-semester-text" class="font-semibold text-sm">End Semester</span></button>
+                 <button id="reset-data-btn" class="p-3 rounded-xl flex items-center justify-center gap-2 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-1 1v1H4a1 1 0 000 2h1v9a2 2 0 002 2h6a2 2 0 002-2V6h1a1 1 0 100-2h-4V3a1 1 0 00-1-1H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd" /></svg><span class="font-semibold text-sm">Reset Data</span></button>
+            </div>
+        </div>
+        
+        <div id="overall-summary" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8"></div>
+        <div id="subjects-container" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6"></div>
+        <div id="empty-state" class="hidden text-center py-16"><h3 class="text-xl font-semibold">No Subjects Yet</h3><p class="text-muted-color mt-2">Click "Add Subject" to start tracking.</p></div>
+    </div>
+    
+    <!-- Modals -->
+    <div id="modal-container"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const getEl = (id) => document.getElementById(id);
+            const D = { // DOM elements
+                subjectsContainer: getEl('subjects-container'), courseSelect: getEl('course-select'), semesterSelect: getEl('semester-select'),
+                overallSummary: getEl('overall-summary'), addSubjectBtn: getEl('add-subject-btn'), emptyState: getEl('empty-state'),
+                themeToggle: getEl('theme-toggle'), resetDataBtn: getEl('reset-data-btn'), modalContainer: getEl('modal-container'),
+                historyBtn: getEl('history-btn'), endSemesterBtn: getEl('end-semester-btn'), endSemesterText: getEl('end-semester-text')
+            };
+
+            const C = { // Constants
+                ATTENDANCE_CRITERIA: 75,
+                SUN_ICON: `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>`,
+                MOON_ICON: `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>`,
+            };
+            
+            let S = { course: 'Bachelors of Economics Honours', semester: 1, subjects: [], semesterHistory: [], theme: 'light' }; // State
+
+            // --- State Management ---
+            const getStorageKey = (type) => `roll-call-${type}-${S.course.replace(/\s/g, '-')}-${S.semester}`;
+            const saveState = () => { try { localStorage.setItem(getStorageKey('subjects'), JSON.stringify(S.subjects)); localStorage.setItem('roll-call-semester-history', JSON.stringify(S.semesterHistory)); } catch (e) { console.error("Error saving state:", e); } };
+            const loadState = () => { try { const s = localStorage.getItem(getStorageKey('subjects')), h = localStorage.getItem('roll-call-semester-history'); S.subjects = s ? JSON.parse(s) : []; S.semesterHistory = h ? JSON.parse(h) : []; } catch (e) { console.error("Error loading state:", e); S.subjects = []; S.semesterHistory = []; } };
+            const saveTheme = () => localStorage.setItem('roll-call-theme', S.theme);
+            const loadTheme = () => { S.theme = localStorage.getItem('roll-call-theme') || (window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); applyTheme(); };
+            const applyTheme = () => { document.documentElement.className = S.theme; D.themeToggle.innerHTML = S.theme === 'dark' ? C.SUN_ICON : C.MOON_ICON; };
+            
+            // --- Core Logic ---
+            const addSubject = () => { S.subjects.push({ id: `s-${Date.now()}`, name: `New Subject ${S.subjects.length+1}`, theoryAttended:0, theoryTotal:0, tutorialAttended:0, tutorialTotal:0 }); render(); };
+            const removeSubject = (id) => { S.subjects = S.subjects.filter(s => s.id !== id); render(); };
+            const resetData = () => { S.subjects = []; render(); };
+            const getSubject = (id) => S.subjects.find(s => s.id === id);
+            const getBonusMarks = (p) => { if (p>=95) return 5; if(p>=90) return 4; if(p>=85) return 3; if(p>=80) return 2; if(p>=75) return 1; return 0; };
+            
+            const calculateSubjectData = (s) => { const a=(s.theoryAttended||0)+(s.tutorialAttended||0),t=(s.theoryTotal||0)+(s.tutorialTotal||0),p=t>0?(a/t*100):0; let m,c; const bonusMarks=getBonusMarks(p); if(t===0){m=`Add classes to begin.`;c='text-muted-color';}else if(p<C.ATTENDANCE_CRITERIA){const n=Math.ceil((C.ATTENDANCE_CRITERIA/100*t)-a);m=`Attend next ${n} class${n>1?'es':''}.`;c='text-orange-500';}else{const b=Math.floor(a/(C.ATTENDANCE_CRITERIA/100))-t;m=b>0?`Can miss ${b} class${b>1?'es':''}.`:`On the edge!`;c=b>0?'text-green-500':'text-yellow-500';} return{p,m,c,bonusMarks}; };
+
+            // --- Main Render Function ---
+            function render() {
+                D.subjectsContainer.innerHTML = '';
+                const hasSubjects = S.subjects.length > 0;
+                D.emptyState.classList.toggle('hidden', hasSubjects);
+                D.subjectsContainer.classList.toggle('hidden', !hasSubjects);
+                if(hasSubjects) S.subjects.forEach(s => D.subjectsContainer.appendChild(createSubjectElement(s)));
+                renderOverallSummary();
+                D.endSemesterText.textContent = S.semester % 2 === 0 ? 'End Even Sem' : 'End Odd Sem';
+                saveState();
+            }
+
+            const renderOverallSummary = () => { const o = S.subjects.reduce((a,s)=>{a.att+=(s.theoryAttended||0)+(s.tutorialAttended||0);a.tot+=(s.theoryTotal||0)+(s.tutorialTotal||0);return a;},{att:0,tot:0}); const p=o.tot>0?(o.att/o.tot*100):0; let n=''; if(p<C.ATTENDANCE_CRITERIA&&o.tot>0){const N=Math.ceil((C.ATTENDANCE_CRITERIA/100*o.tot)-o.att);n=`<div class="text-xs mt-1">Need ${N} more</div>`;} D.overallSummary.innerHTML=`<div class="vibe-card p-4 rounded-xl shadow-md"><h3 class="text-xs font-medium text-muted-color">Total Attended</h3><div class="text-2xl font-bold">${o.att}</div></div><div class="vibe-card p-4 rounded-xl shadow-md"><h3 class="text-xs font-medium text-muted-color">Total Classes</h3><div class="text-2xl font-bold">${o.tot}</div></div><div class="vibe-card p-4 rounded-xl shadow-md col-span-2 ${p<C.ATTENDANCE_CRITERIA?'bg-orange-100 dark:bg-orange-900/40':'bg-green-100 dark:bg-green-900/40'}"><h3 class="text-xs font-medium ${p<C.ATTENDANCE_CRITERIA?'text-orange-800 dark:text-orange-200':'text-green-800 dark:text-green-200'}">Overall Percentage</h3><div class="text-3xl font-bold ${p<C.ATTENDANCE_CRITERIA?'text-orange-600 dark:text-orange-300':'text-green-600 dark:text-green-300'}">${p.toFixed(2)}%</div>${n}</div>`;};
+            
+            function createSubjectElement(s) { const c=calculateSubjectData(s),el=document.createElement('div'); el.className='vibe-card p-5 rounded-2xl shadow-lg space-y-4 fade-in'; el.innerHTML=`<div class="flex justify-between items-start"><input type="text" value="${s.name}" class="subject-name-input" placeholder="Subject Name"><button data-remove-id="${s.id}" class="remove-btn text-muted-color hover:text-red-500 p-1"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg></button></div><div><div class="h-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full"><div class="progress-bar h-2 rounded-full" style="width:${c.p}%; background-color:${c.p<C.ATTENDANCE_CRITERIA?'#f97316':'#22c55e'};"></div></div><div class="flex justify-between items-center mt-2 text-sm"><span class="${c.c} font-medium">${c.m}</span><div class="text-right"><span class="font-bold text-lg">${c.p.toFixed(1)}%</span><div class="text-xs text-muted-color">Marks: <b class="text-accent-color">${c.bonusMarks}/5</b></div></div></div></div><div class="grid grid-cols-2 gap-4 pt-4 border-t border-border-color">${createClassTypeControl('theory',s)}${createClassTypeControl('tutorial',s)}</div><div class="flex justify-between items-center pt-2 border-t border-border-color"><button data-ai-id="${s.id}" class="ai-btn text-sm font-semibold flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 text-accent-color">AI Study Helper</button><div class="flex gap-2"><button data-planner-id="${s.id}" class="planner-btn text-sm font-semibold flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700">Planner</button></div></div>`; el.querySelector('.subject-name-input').addEventListener('change',(e)=>{s.name=e.target.value;saveState();}); el.querySelector('.remove-btn').addEventListener('click',()=>removeSubject(s.id)); el.querySelector('.planner-btn').addEventListener('click',()=>openPlannerModal(s.id)); el.querySelector('.ai-btn').addEventListener('click',()=>getAIStudyTip(s.id)); ['theory','tutorial'].forEach(t=>{const a=`${t}Attended`,o=`${t}Total`; el.querySelector(`[data-type="${a}-plus"]`).addEventListener('click',()=>handleControlClick(s,a,1)); el.querySelector(`[data-type="${o}-plus"]`).addEventListener('click',()=>handleControlClick(s,o,1)); el.querySelector(`[data-type="${a}-minus"]`).addEventListener('click',()=>handleControlClick(s,a,-1)); el.querySelector(`[data-type="${o}-minus"]`).addEventListener('click',()=>handleControlClick(s,o,-1)); }); return el; }
+            const createClassTypeControl = (t,s) => {const a=s[`${t}Attended`],o=s[`${t}Total`],p=o>0?(a/o*100):0; return`<div><div class="flex justify-between items-center mb-2"><h4 class="font-semibold text-sm">${t.charAt(0).toUpperCase()+t.slice(1)}</h4><span class="text-xs font-medium text-muted-color">${p.toFixed(0)}%</span></div><div class="flex items-center justify-between bg-gray-100 dark:bg-gray-900/50 p-2 rounded-lg"><button data-type="${t}Attended-plus" class="btn-control text-green-500">+</button><div class="text-center"><span class="font-bold text-lg">${a}</span><span class="text-muted-color">/</span><span class="font-bold text-lg">${o}</span></div><button data-type="${t}Total-plus" class="btn-control">+</button></div><div class="flex items-center justify-between text-xs mt-1 px-1"><button data-type="${t}Attended-minus" class="text-muted-color hover:text-red-500">- Attended</button><button data-type="${t}Total-minus" class="text-muted-color hover:text-red-500">- Total</button></div></div>`;};
+            
+            function handleControlClick(s,p,d) { let n=(s[p]||0)+d; if(n<0)n=0; const oP=p.replace('Attended','Total'),aP=p.replace('Total','Attended'); if(p.includes('Total')&&n<(s[aP]||0))n=s[aP]; if(p.includes('Attended')&&n>(s[oP]||0))n=s[oP]; s[p]=n; render(); }
+
+            // --- Modals ---
+            const closeModal = () => D.modalContainer.innerHTML = '';
+            const openModal = (title, content, size = 'max-w-lg') => { D.modalContainer.innerHTML = `<div id="modal-overlay" class="modal-overlay active"><div class="modal-content vibe-card rounded-2xl shadow-2xl p-6 w-full ${size}"><div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold">${title}</h3><button id="modal-close-btn" class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">&times;</button></div>${content}</div></div>`; getEl('modal-overlay').addEventListener('click', (e) => { if (e.target.id === 'modal-overlay') closeModal(); }); getEl('modal-close-btn').addEventListener('click', closeModal); };
+            
+            // --- Features ---
+            function openPlannerModal(id) {
+                const subject = getSubject(id);
+                if (!subject) return;
+                let content = `<div class="space-y-4"><div class="grid grid-cols-2 gap-4"><div><label class="text-sm font-medium">If I attend next...</label><input id="planner-attend" type="number" min="0" value="0" class="mt-1 w-full p-2 rounded-md bg-gray-100 dark:bg-gray-800 border-transparent focus:ring-accent-color"></div><div><label class="text-sm font-medium">And I miss next...</label><input id="planner-miss" type="number" min="0" value="0" class="mt-1 w-full p-2 rounded-md bg-gray-100 dark:bg-gray-800 border-transparent focus:ring-accent-color"></div></div><div id="planner-result" class="p-4 rounded-lg bg-gray-100 dark:bg-gray-800 text-center"></div></div>`;
+                openModal(`Planner: ${subject.name}`, content);
+                const attendInput = getEl('planner-attend'), missInput = getEl('planner-miss'), resultDiv = getEl('planner-result');
+                const updatePlanner = () => {
+                    const attendedNow = (subject.theoryAttended||0) + (subject.tutorialAttended||0);
+                    const totalNow = (subject.theoryTotal||0) + (subject.tutorialTotal||0);
+                    const attendNext = parseInt(attendInput.value) || 0;
+                    const missNext = parseInt(missInput.value) || 0;
+                    const futureAttended = attendedNow + attendNext;
+                    const futureTotal = totalNow + attendNext + missNext;
+                    const futurePercent = futureTotal > 0 ? (futureAttended / futureTotal * 100) : 0;
+                    const bonusMarks = getBonusMarks(futurePercent);
+                    resultDiv.innerHTML = `<div class="text-sm text-muted-color">Projected Attendance</div><div class="text-3xl font-bold my-1">${futurePercent.toFixed(2)}%</div><div class="text-sm font-medium">Bonus Marks: <span class="text-accent-color font-bold">${bonusMarks} / 5</span></div>`;
+                };
+                attendInput.addEventListener('input', updatePlanner);
+                missInput.addEventListener('input', updatePlanner);
+                updatePlanner();
+            }
+
+            function openSemesterHistoryModal() {
+                if (S.semesterHistory.length === 0) {
+                    openModal('Semester History', '<p class="text-center text-muted-color">No completed semesters found. Use the "End Semester" button to archive your progress.</p>');
+                    return;
+                }
+                let content = '<div class="space-y-6 max-h-[70vh] overflow-y-auto pr-2">';
+                [...S.semesterHistory].reverse().forEach(sem => {
+                    content += `<div class="vibe-card p-4 rounded-lg"><h4 class="font-bold text-md mb-3">${sem.course} - Semester ${sem.semester}</h4><div class="space-y-2">`;
+                    sem.subjects.forEach(sub => {
+                        const barColor = sub.percentage >= C.ATTENDANCE_CRITERIA ? 'bg-green-500' : 'bg-orange-500';
+                        content += `
+                            <div>
+                                <div class="flex justify-between items-baseline mb-1">
+                                    <span class="font-semibold text-sm">${sub.name}</span>
+                                    <span class="text-xs text-muted-color">Marks: <b class="text-accent-color">${sub.bonusMarks}/5</b></span>
+                                </div>
+                                <div class="h-2.5 w-full bg-gray-200 dark:bg-gray-700 rounded-full">
+                                    <div class="${barColor} h-2.5 rounded-full" style="width: ${sub.percentage}%"></div>
+                                </div>
+                                 <div class="text-right text-xs font-medium mt-1">${sub.percentage.toFixed(1)}%</div>
+                            </div>`;
+                    });
+                    content += '</div></div>';
+                });
+                content += '</div>';
+                openModal('Semester History', content, 'max-w-2xl');
+            }
+
+            function handleEndSemester() {
+                if (S.subjects.length === 0) {
+                     openModal('End Semester', '<p class="text-center text-muted-color">Cannot end semester with no subjects. Please add subjects and track attendance first.</p>');
+                     return;
+                }
+                const summary = {
+                    course: S.course, semester: S.semester,
+                    subjects: S.subjects.map(s => {
+                        const {p, bonusMarks} = calculateSubjectData(s);
+                        return { name: s.name, percentage: p, bonusMarks: bonusMarks };
+                    })
+                };
+                S.semesterHistory.push(summary);
+                resetData();
+                openSemesterHistoryModal();
+            }
+            
+            async function getAIStudyTip(subjectId) {
+                const subject = getSubject(id);
+                if (!subject) return;
+                openModal(`AI Study Helper: ${subject.name}`, `<div id="ai-response" class="min-h-[8rem] flex items-center justify-center"><div class="spinner"></div></div>`);
+                const userQuery = `I am a university student studying '${subject.name}'. Give me one, simple, and highly actionable study tip to help me succeed in this subject. Keep it concise and practical.`;
+                const systemPrompt = "You are an expert academic tutor. Provide a single, concrete study tip for the given university-level subject. The tip should be encouraging and easy for a busy student to implement immediately. Do not be generic; tailor the tip to the subject. For example, for 'Calculus', suggest a specific practice technique, not just 'do more problems'.";
+                const apiKey = ""; 
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+                try {
+                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: userQuery }] }], systemInstruction: { parts: [{ text: systemPrompt }] } }) });
+                    if (!response.ok) throw new Error(`API error: ${response.statusText}`);
+                    const result = await response.json();
+                    const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                    getEl('ai-response').innerHTML = text ? `<p>${text.replace(/\n/g, '<br>')}</p>` : `<p class="text-red-500">Could not generate a tip.</p>`;
+                } catch (error) { console.error("Gemini API call failed:", error); getEl('ai-response').innerHTML = `<p class="text-red-500">Sorry, the AI helper couldn't be reached.</p>`; }
+            }
+
+            // --- Initial Setup ---
+            function init() {
+                loadTheme();
+                for (let i = 1; i <= 8; i++) { D.semesterSelect.innerHTML += `<option value="${i}">Semester ${i}</option>`; }
+                const handleContextChange = () => { loadState(); render(); };
+                D.courseSelect.addEventListener('change', (e) => { S.course = e.target.value; handleContextChange(); });
+                D.semesterSelect.addEventListener('change', (e) => { S.semester = parseInt(e.target.value, 10); handleContextChange(); });
+                D.addSubjectBtn.addEventListener('click', addSubject);
+                D.historyBtn.addEventListener('click', openSemesterHistoryModal);
+                D.themeToggle.addEventListener('click', () => { S.theme = S.theme === 'light' ? 'dark' : 'light'; applyTheme(); saveTheme(); });
+                
+                const addConfirmation = (btn, title, msg, onConfirm) => {
+                     btn.addEventListener('click', () => {
+                        openModal(title, `<p class="text-muted-color mb-6">${msg}</p><div class="flex justify-end gap-3"><button id="modal-cancel" class="px-4 py-2 rounded-lg font-semibold text-sm bg-gray-200 dark:bg-gray-600">Cancel</button><button id="modal-confirm" class="px-4 py-2 rounded-lg font-semibold text-sm ${btn === D.resetDataBtn ? 'bg-red-600' : 'bg-blue-600'} text-white">Confirm</button></div>`);
+                        getEl('modal-cancel').addEventListener('click', closeModal);
+                        getEl('modal-confirm').addEventListener('click', () => { onConfirm(); closeModal(); });
+                     });
+                };
+                addConfirmation(D.resetDataBtn, 'Confirm Reset', 'This will permanently delete the current semester\'s data. This action cannot be undone.', resetData);
+                addConfirmation(D.endSemesterBtn, 'Confirm End Semester', 'This will archive the current semester\'s results and start a fresh slate. Are you sure?', handleEndSemester);
+
+                loadState();
+                render();
+            }
+            init();
+        });
+    </script>
+</body>
+</html>
